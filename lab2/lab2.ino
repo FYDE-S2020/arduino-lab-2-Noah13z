@@ -4,55 +4,55 @@
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 
+//create every varible to connect to wifi
 char auth[] = "b1VFIjb9nj3neVO2BATKybUdb6-5O3eU";
 char ssid[32] = "utguest";
 char pass[32] = "";
 
-#define LED 2
-/*A global for LED state
-A global for current duty cycle
-A global Blynk Timer object
-A global time counter variable
-A global String object for holding messages
-A timer event function
-two BLYNK_WRITE functions- one for slider, one for button*/
+#define LED 2 //define the led
 
+//ROM varibles
 const int freq = 5000;
 const int ledChannel = 0;  
 const int resolution = 10;
 
-BlynkTimer timer;
+//RAM varibles for timer
+int timecount = 0;
+String w = ""; 
 
-/*void setup() {
-  Serial.begin(115200);
-  pinMode (LED_PIN, OUTPUT);
-  Blynk.begin(auth, ssid, pass);
-}
+BlynkTimer timer;//creates the timer
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  Blynk.run();
-}
-
-BLYNK_WRITE (V0)
+//send info to both the terminal and the dispaly
+void myTimerEvent()
 {
-  int pinValue = param.asInt();
+    if (timecount == 100)
+    {
+      Blynk.virtualWrite(V2, millis() / 1000); // Write the arduino uptime every second
+      timecount = 0;
+    }
 
-  if (pinValue == 1)
-    digitalWrite (LED_PIN, LOW);
-  else
-    digitalWrite (LED_PIN, HIGH);
+    else 
+    {
+      char character;
+      while (Serial.available ())
+      {
+        character = Serial.read ();
+        w.concat (character);
+      }
+      if (w != "")
+      {
+        Blynk.virtualWrite (V3, w);
+        w = "";
+      }
+    }
+    timecount += 1;
 }
-
-BLYNK_READ (V2)
-{
-  Blynk.virtualWrite (2, millis()/1000);
-}*/
 
 // Note the different pin setup function!
 void setup() {
     Serial.begin(115200);
     Blynk.begin(auth, ssid, pass);
+    timer.setInterval(10L, myTimerEvent);//calls timer every second
   
     // configure LED PWM functionality
     ledcSetup (ledChannel, freq, resolution);
@@ -64,6 +64,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   Blynk.run();
+  timer.run();
 }
 
 BLYNK_WRITE (V0)
@@ -71,9 +72,10 @@ BLYNK_WRITE (V0)
   int pinValue = param.asInt();
 
   if (pinValue == 1)
-    ledcWrite(ledChannel, 0);
+    ledcWrite(ledChannel, 0);//set LED low
+    
   else
-    ledcWrite(ledChannel, 1023);
+    ledcWrite(ledChannel, 1023);//set LED high
 }
 
 // If virtual pin 2 controls fade value, 0 to 1023.
