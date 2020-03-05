@@ -81,7 +81,6 @@ BLYNK_WRITE (V0)
 // If virtual pin 2 controls fade value, 0 to 1023.
 BLYNK_WRITE(1)
 {
-    // param is a member variable of the Blynk ADT. It is exposed so you can read it.
-    int val = param.asInt(); // assigning incoming value from pin V1 to a variable
-    ledcWrite(ledChannel, val); // Note that this takes ledChannel as an argument, NOT the pin! Set duty = val.
+    int val = param.asInt(); 
+    ledcWrite(ledChannel, val); 
 }
